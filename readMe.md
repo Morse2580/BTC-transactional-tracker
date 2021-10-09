@@ -1,8 +1,8 @@
-#Unconfirmed Bitcoin Transactional Tracker 
+# Unconfirmed Bitcoin Transactional Tracker 
 
 
 
-##Brief Overview
+## Brief Overview
 
 
 The Bitcoin(BTC) transactional tracker is a web scrapping software that  scrapes realtime data after every minute
@@ -11,7 +11,7 @@ The transactional data is scrapped from https://www.blockchain.com/btc/unconfirm
 
 
 ---
-##Webscrapping(get the data)
+## Webscrapping(get the data)
 If we inspect the page, we notice that each result row is inside a <div> tag with a 'sc-1g6z4xm-0 hXyplo' class. 
 The elements that we’re looking for are situated in the following selectors:
 ``  
@@ -31,14 +31,18 @@ The following code is a reprsenstation of the variable here above;
     transaction_content = soup.find_all('div', class_='sc-1g6z4xm-0 hXyplo')
 
     for transaction in transaction_content:
-        hashh = transaction.find('a',class_='sc-1r996ns-0 fLwyDF sc-1tbyx6t-1 kCGMTY iklhnl-0 eEewhk d53qjk-0 ctEFcK').text
-        time = transaction.find('span', class_='sc-1ryi78w-0 cILyoi sc-16b9dsl-1 ZwupP u3ufsr-0 eQTRKC').text
-        amtBTC = transaction.find('div', class_='sc-1au2w4e-0 fTyXWG').find('span', class_='sc-1ryi78w-0 cILyoi sc-16b9dsl-1 ZwupP u3ufsr-0 eQTRKC').text
-        amtUSD = transaction.find('div', class_='sc-1au2w4e-0 fTyXWG').find_next_sibling('div').find('span', class_='sc-1ryi78w-0 cILyoi sc-16b9dsl-1 ZwupP u3ufsr-0 eQTRKC').text
+        hashh = transaction.find('a',class_='sc-1r996ns-0 fLwyDF 
+                                    sc-1tbyx6t-1 kCGMTY iklhnl-0 eEewhk d53qjk-0 ctEFcK').text
+        time = transaction.find('span', 
+                                        class_='sc-1ryi78w-0 cILyoi sc-16b9dsl-1 ZwupP u3ufsr-0 eQTRKC').text
+        amtBTC = transaction.find('div', 
+                                    class_='sc-1au2w4e-0 fTyXWG').find('span', class_='sc-1ryi78w-0 cILyoi sc-16b9dsl-1 ZwupP u3ufsr-0 eQTRKC').text
+        amtUSD = transaction.find('div', 
+                class_='sc-1au2w4e-0 fTyXWG').find_next_sibling('div').find('span', class_='sc-1ryi78w-0 cILyoi sc-16b9dsl-1 ZwupP u3ufsr-0 eQTRKC').text
 
 
 
-##Storing/Logging the data
+## Storing/Logging the data
 As the scrapper runs, the transactions are appended to a text/csv file, from lowest to highest. On the first instance,
 the scrapper should run and store the data in a text/csv file. Every minute it should log in new information in the initial txt/csv file.
 
