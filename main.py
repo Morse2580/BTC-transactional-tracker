@@ -8,13 +8,16 @@ import csv
 from  pymongo  import  MongoClient
 import  pymongo  as mongo
 from requests.api import get
+import redis
+import json
+
 
 class btc_Transactions:
     def __init__(self):
         self.url = 'https://www.blockchain.com/btc/unconfirmed-transactions'
         self.lstTransactions = []
 
-    #get all the data from the page
+    #get all the data from the webpage using beautiful soup(bs4)
     def getTransactions(self):
         r = requests.get(self.url)
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -36,11 +39,11 @@ class btc_Transactions:
             self.lstTransactions.append({
                 'Hash': hashh,
                 'Time': scrapperTime,
-                'Amount BTC': amtBTC,
-                'Amount USD': amtUSD
+                'AmountBTC': amtBTC,
+                'AmountUSD': amtUSD
             })
         #sorted according to BTC_values
-        transactionsAsc = sorted(self.lstTransactions, key=lambda price: float(price['Amount BTC']), reverse = True)
+        transactionsAsc = sorted(self.lstTransactions, key=lambda price: float(price['AmountBTC']), reverse = True)
         transactionsAsc = transactionsAsc[(len(transactionsAsc) - 10):len(transactionsAsc)]
         return transactionsAsc
 
@@ -51,10 +54,14 @@ class btc_Transactions:
         collection = db.BTC_transactions
         collection.insert_many(self.getTransactions())
 
+    def redis_caching(self):
+        redis_r = redis.Redis()
+        redis_r.set("Transaction:", json.dumps(self.getTransactions()))
+
     #write to csv file
     def logTransactions(self):
         if os.path.exists('./TopTenTransactions.txt'):
-            fieldnames = ['Hash', 'Time', 'Amount BTC', 'Amount USD']
+            fieldnames = ['Hash', 'Time', 'AmountBTC', 'AmountUSD']
             with open('TopTenTransactions.json', 'a', encoding='UTF8', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 f.write("\n")
@@ -63,7 +70,7 @@ class btc_Transactions:
                 writer.writerows(self.getTransactions())
                 f.close()
         else:
-            fieldnames = ['Hash','Time', 'Amount BTC','Amount USD']
+            fieldnames = ['Hash','Time', 'AmountBTC','AmountUSD']
             with open('TopTenTransactions.txt', 'w', encoding='UTF8', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
@@ -76,8 +83,10 @@ class btc_Transactions:
         while True:
             self.getTransactions()
             self.mongoDatabase()
+            self.redis_caching()
             self.logTransactions()
             time.sleep(60)
 
 run_program =  btc_Transactions()
 run_program.run_scrapper()
+
